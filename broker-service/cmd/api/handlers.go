@@ -1,8 +1,9 @@
 package main
 
 import (
-	"encoding/json"
 	"net/http"
+
+	"github.com/nullsploit01/go-microservices/broker/common/util"
 )
 
 type Response struct {
@@ -17,8 +18,5 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 		Message: "Broker says what?",
 	}
 
-	o, _ := json.MarshalIndent(payload, "", "\t")
-	w.Header().Set("Content-Type", "application/json")
-	w.WriteHeader(http.StatusAccepted)
-	w.Write(o)
+	util.WriteJSON(w, http.StatusOK, payload)
 }
