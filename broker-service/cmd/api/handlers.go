@@ -29,7 +29,7 @@ func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 func (app *Config) HandleRequest(w http.ResponseWriter, r *http.Request) {
 	var requestPayload RequestPayload
 
-	if err := app.readJson(w, r, requestPayload); err != nil {
+	if err := app.readJson(w, r, &requestPayload); err != nil {
 		app.errorJson(w, err)
 		return
 	}
@@ -44,7 +44,11 @@ func (app *Config) HandleRequest(w http.ResponseWriter, r *http.Request) {
 }
 
 func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
-	jsonData, _ := json.MarshalIndent(a, "", "\t")
+	jsonData, err := json.MarshalIndent(a, "", "\t")
+	if err != nil {
+		app.errorJson(w, err)
+		return
+	}
 
 	request, err := http.NewRequest("POST", "http://authentication-service/authenticate", bytes.NewBuffer(jsonData))
 	if err != nil {
@@ -61,18 +65,18 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 
 	defer response.Body.Close()
 
-	if response.StatusCode == http.StatusUnauthorized {
-		app.errorJson(w, errors.New("invalid credentials"))
-		return
-	} else if response.StatusCode != http.StatusAccepted {
-		app.errorJson(w, errors.New("error calling auth service"))
-		return
-	}
-
 	var jsonResponseFromService Response
 	err = json.NewDecoder(response.Body).Decode(&jsonResponseFromService)
 	if err != nil {
 		app.errorJson(w, err)
+		return
+	}
+
+	if response.StatusCode == http.StatusUnauthorized {
+		app.errorJson(w, errors.New(jsonResponseFromService.Message), http.StatusUnauthorized)
+		return
+	} else if response.StatusCode != http.StatusAccepted {
+		app.errorJson(w, errors.New("error calling auth service"))
 		return
 	}
 

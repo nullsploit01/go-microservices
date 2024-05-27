@@ -19,13 +19,13 @@ func (app *Config) Authenticate(w http.ResponseWriter, r *http.Request) {
 
 	user, err := app.Models.User.GetByEmail(requestPayload.Email)
 	if err != nil {
-		app.errorJson(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		app.errorJson(w, fmt.Errorf("user not found %s", err), http.StatusUnauthorized)
 		return
 	}
 
 	valid, err := user.PasswordMatches(requestPayload.Password)
 	if err != nil || !valid {
-		app.errorJson(w, errors.New("invalid credentials"), http.StatusBadRequest)
+		app.errorJson(w, errors.New("invalid password"), http.StatusUnauthorized)
 		return
 	}
 
