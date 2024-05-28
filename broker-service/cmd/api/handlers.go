@@ -75,8 +75,8 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	if response.StatusCode == http.StatusUnauthorized {
 		app.errorJson(w, errors.New(jsonResponseFromService.Message), http.StatusUnauthorized)
 		return
-	} else if response.StatusCode != http.StatusAccepted {
-		app.errorJson(w, errors.New("error calling auth service"))
+	} else if response.StatusCode != http.StatusOK {
+		app.errorJson(w, errors.New(jsonResponseFromService.Message))
 		return
 	}
 
@@ -90,5 +90,5 @@ func (app *Config) authenticate(w http.ResponseWriter, a AuthPayload) {
 	payload.Message = "authenticated"
 	payload.Data = jsonResponseFromService.Data
 
-	app.writeJson(w, http.StatusAccepted, payload)
+	app.writeJson(w, http.StatusOK, payload)
 }
