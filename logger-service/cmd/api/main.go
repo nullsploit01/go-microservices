@@ -43,17 +43,14 @@ func main() {
 		Models: data.New(client),
 	}
 
-	go app.server()
-	log.Printf("Logger service running on port %s\n", webPort)
-}
-
-func (app *Config) server() {
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%s", webPort),
 		Handler: app.routes(),
 	}
 
-	err := srv.ListenAndServe()
+	log.Printf("Logger service running on port %s\n", webPort)
+
+	err = srv.ListenAndServe()
 	if err != nil {
 		panic(err)
 	}
@@ -72,6 +69,8 @@ func connectMongoDB(ctx context.Context) (*mongo.Client, error) {
 		log.Println("Error connecting MongoDB", err)
 		return nil, err
 	}
+
+	log.Println("Connected to mongo!")
 
 	return c, nil
 }
