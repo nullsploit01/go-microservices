@@ -2,9 +2,12 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"log"
+	"net/http"
 	"time"
 
+	"github.com/nullsploit01/go-microservices/logger/data"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 )
@@ -16,9 +19,8 @@ const (
 	gRpcPort = "50001"
 )
 
-var client *mongo.Client
-
 type Config struct {
+	Models data.Models
 }
 
 func main() {
@@ -36,6 +38,25 @@ func main() {
 			panic(err)
 		}
 	}()
+
+	app := Config{
+		Models: data.New(client),
+	}
+
+	go app.server()
+	log.Printf("Logger service running on port %s\n", webPort)
+}
+
+func (app *Config) server() {
+	srv := &http.Server{
+		Addr:    fmt.Sprintf(":%s", webPort),
+		Handler: app.routes(),
+	}
+
+	err := srv.ListenAndServe()
+	if err != nil {
+		panic(err)
+	}
 }
 
 func connectMongoDB(ctx context.Context) (*mongo.Client, error) {
