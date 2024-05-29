@@ -14,7 +14,7 @@ type Payload struct {
 func (app *Config) CreateLog(w http.ResponseWriter, r *http.Request) {
 	var requestPayload Payload
 
-	err := app.readJson(w, r, requestPayload)
+	err := app.readJson(w, r, &requestPayload)
 	if err != nil {
 		app.errorJson(w, err)
 		return

@@ -75,14 +75,22 @@ func (app *Config) logItem(w http.ResponseWriter, l LogPayload) {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusCreated {
+	var jsonResponseFromService Response
+	err = json.NewDecoder(response.Body).Decode(&jsonResponseFromService)
+	if err != nil {
 		app.errorJson(w, err)
+		return
+	}
+
+	if response.StatusCode != http.StatusCreated {
+		app.errorJson(w, errors.New(jsonResponseFromService.Message))
 		return
 	}
 
 	var payload Response
 	payload.Error = false
-	payload.Message = "logged"
+	payload.Message = jsonResponseFromService.Message
+	payload.Data = jsonResponseFromService.Data
 
 	app.writeJson(w, http.StatusCreated, payload)
 }
