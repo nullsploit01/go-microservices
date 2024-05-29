@@ -37,8 +37,9 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: users
+      PGDATA: /var/lib/postgresql/data/pgdata
     volumes:
-      - ~/db-data/postgres:/var/lib/postgresql/data/
+      - db-data:/var/lib/postgresql/data/
 
   mongo:
     image: 'mongo:4.2.16-bionic'
@@ -52,4 +53,7 @@ services:
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
     volumes:
-      - ~/db-data/mongo:/data/db
+      - db-data:/data/db/
+
+volumes:
+  db-data:
