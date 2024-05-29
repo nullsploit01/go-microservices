@@ -36,5 +36,5 @@ func (app *Config) CreateLog(w http.ResponseWriter, r *http.Request) {
 		Message: "logged",
 	}
 
-	app.writeJson(w, http.StatusAccepted, res)
+	app.writeJson(w, http.StatusCreated, res)
 }
