@@ -10,6 +10,7 @@
             <a id="brokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Broker</a>
             <a id="authBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Auth</a>
             <a id="logBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Log</a>
+            <a id="mailBrokerBtn" class="btn btn-outline-secondary" href="javascript:void(0);">Test Mail</a>
 
             <div id="output" class="mt-5" style="outline: 1px solid silver; padding: 2em;">
                 <span class="text-muted">Output shows here...</span>
@@ -38,9 +39,46 @@
     let brokerBtn = document.getElementById("brokerBtn")
     let authBrokerBtn = document.getElementById("authBrokerBtn")
     let logBrokerBtn = document.getElementById("logBrokerBtn")
+    let mailBrokerBtn = document.getElementById("mailBrokerBtn")
     let output = document.getElementById("output")
     let sent = document.getElementById("sent")
     let received = document.getElementById("received")
+
+    mailBrokerBtn.addEventListener("click", () => {
+        const payload = {
+            action: "mail",
+            mail: {
+                from: "tester@test.com",
+                to: "receiver@test.com",
+                subject: "Test Email burrrr",
+                message: "Sup Mailer"
+            }
+        }
+
+        const headers = new Headers()
+        headers.append("Content-Type", "application/json")
+
+        const body = {
+            method: "POST",
+            body: JSON.stringify(payload),
+            headers
+        }
+
+        fetch("http:\/\/localhost:8080/handle", body)
+            .then(r => r.json())
+            .then((d) => {
+                sent.innerHTML = JSON.stringify(payload, undefined, 4)
+                received.innerHTML = JSON.stringify(d, undefined, 4)
+                if (d.error) {
+                    output.innerHTML += `<br /><strong>Error:</strong> ${d.message}`
+                } else {
+                    output.innerHTML += `<br/><strong>Response from broker-service</strong>: ${d.message}`;
+                }
+            })
+            .catch((e) => {
+                output.innerHTML += `<br/>Error: ${e}`
+            })
+    })
 
     logBrokerBtn.addEventListener("click", () => {
         const payload = {
