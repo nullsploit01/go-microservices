@@ -6,6 +6,7 @@ import (
 	"math"
 	"time"
 
+	"github.com/nullsploit01/go-microservices/listener/event"
 	"github.com/rabbitmq/amqp091-go"
 )
 
@@ -16,6 +17,19 @@ func main() {
 	}
 
 	defer rabbitmqConn.Close()
+
+	fmt.Println("listening and consuming rabbit mq messages")
+
+	consumer, err := event.NewConsumer(rabbitmqConn)
+	if err != nil {
+		panic(err)
+	}
+
+	err = consumer.Listen([]string{"log.INFO", "log.WARNING", "log.ERROR"})
+	if err != nil {
+		log.Println(err)
+	}
+
 }
 
 func connect() (*amqp091.Connection, error) {
@@ -24,11 +38,12 @@ func connect() (*amqp091.Connection, error) {
 	var conn *amqp091.Connection
 
 	for {
-		c, err := amqp091.Dial("amqp://guest:guest@localhost")
+		c, err := amqp091.Dial("amqp://guest:guest@rabbitmq")
 		if err != nil {
 			fmt.Println("Could not connect to rabbitmq, retrying")
 			counts += 1
 		} else {
+			fmt.Println("Connected to rabbit mq")
 			conn = c
 			break
 		}
