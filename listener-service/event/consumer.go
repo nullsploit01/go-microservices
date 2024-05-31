@@ -20,6 +20,12 @@ type Payload struct {
 	Data string `json:"data"`
 }
 
+type Response struct {
+	Error   bool   `json:"error"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
+}
+
 func NewConsumer(conn *amqp091.Connection) (Consumer, error) {
 	consumer := Consumer{
 		conn: conn,
@@ -121,8 +127,14 @@ func logEvent(entry Payload) error {
 	}
 	defer response.Body.Close()
 
-	if response.StatusCode != http.StatusCreated {
-		return fmt.Errorf("something went wrong while logging event %s", entry.Name)
+	var jsonResponseFromService Response
+	err = json.NewDecoder(response.Body).Decode(&jsonResponseFromService)
+	if err != nil {
+		return err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return fmt.Errorf("something went wrong while logging event %s", jsonResponseFromService.Message)
 	}
 
 	return nil

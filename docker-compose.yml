@@ -88,8 +88,8 @@ services:
       MONGO_INITDB_DATABASE: logs
       MONGO_INITDB_ROOT_USERNAME: admin
       MONGO_INITDB_ROOT_PASSWORD: password
-    volumes:
-      - db-data:/data/db/
+    # volumes:
+    #   - db-data:/data/db/
 
   mailhog:
     image: 'mailhog/mailhog:latest'
@@ -108,8 +108,8 @@ services:
     deploy:
       mode: replicated
       replicas: 1
-    volumes:
-      - db-data:/var/lib/rabbitmq/
+    # volumes:
+    #   - db-data:/var/lib/rabbitmq/
 
 volumes:
   db-data:

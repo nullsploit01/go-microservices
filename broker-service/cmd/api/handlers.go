@@ -5,6 +5,8 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+
+	"github.com/nullsploit01/go-microservices/broker/event"
 )
 
 type RequestPayload struct {
@@ -53,7 +55,7 @@ func (app *Config) HandleRequest(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, requestPayload.Auth)
 
 	case "log":
-		app.logItem(w, requestPayload.Log)
+		app.logEventViaRabbit(w, requestPayload.Log)
 
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
@@ -198,4 +200,40 @@ func (app *Config) sendMail(w http.ResponseWriter, m MailPayload) {
 	payload.Data = jsonResponseFromService.Data
 
 	app.writeJson(w, http.StatusCreated, payload)
+}
+
+func (app *Config) logEventViaRabbit(w http.ResponseWriter, l LogPayload) {
+	err := app.pushToQueue(l.Name, l.Data)
+	if err != nil {
+		app.errorJson(w, err)
+		return
+	}
+
+	var response Response
+	response.Error = false
+	response.Message = "event logged!"
+
+	app.writeJson(w, http.StatusOK, response)
+}
+
+func (app *Config) pushToQueue(name, message string) error {
+	emitter, err := event.NewEventEmitter(&app.Rabbit)
+
+	if err != nil {
+		return err
+	}
+
+	payload := LogPayload{
+		Name: name,
+		Data: message,
+	}
+
+	j, err := json.MarshalIndent(&payload, "", "\t")
+	if err != nil {
+		return err
+	}
+
+	err = emitter.Push(string(j), "log.INFO")
+
+	return err
 }
