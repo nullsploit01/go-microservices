@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"log"
+	"net"
 	"net/http"
+	"net/rpc"
 	"time"
 
 	"github.com/nullsploit01/go-microservices/logger/data"
@@ -23,15 +25,19 @@ type Config struct {
 	Models data.Models
 }
 
+var client *mongo.Client
+
 func main() {
 
 	ctx, cancel := context.WithTimeout(context.Background(), 12*time.Second)
 	defer cancel()
 
-	client, err := connectMongoDB(ctx)
+	c, err := connectMongoDB(ctx)
 	if err != nil {
 		log.Panic(err)
 	}
+
+	client = c
 
 	defer func() {
 		if err = client.Disconnect(ctx); err != nil {
@@ -50,9 +56,33 @@ func main() {
 
 	log.Printf("Logger service running on port %s\n", webPort)
 
+	err = rpc.Register(new(RPCServer))
+	go app.rpcListen()
+
 	err = srv.ListenAndServe()
 	if err != nil {
 		panic(err)
+	}
+}
+
+func (app *Config) rpcListen() error {
+	log.Println("Starting RPC Server on port", rpcPort)
+	listen, err := net.Listen("tcp", fmt.Sprintf(":%s", rpcPort))
+
+	if err != nil {
+		return err
+	}
+
+	defer listen.Close()
+
+	for {
+		rpcConnection, err := listen.Accept()
+		if err != nil {
+			fmt.Println("error accepting tcp connection", err)
+			continue
+		}
+
+		go rpc.ServeConn(rpcConnection)
 	}
 }
 
