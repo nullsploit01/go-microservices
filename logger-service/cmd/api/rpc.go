@@ -25,9 +25,10 @@ func (r *RPCServer) LogInfo(paylaod RPCPayload, resp *string) error {
 
 	if err != nil {
 		log.Println("error adding log", err)
+		return err
 	}
 
 	*resp = "Processed payload via RPC " + paylaod.Name
 
-	return err
+	return nil
 }

@@ -5,6 +5,7 @@ import (
 	"encoding/json"
 	"errors"
 	"net/http"
+	"net/rpc"
 
 	"github.com/nullsploit01/go-microservices/broker/event"
 )
@@ -33,6 +34,11 @@ type MailPayload struct {
 	Message string `json:"message"`
 }
 
+type RPCPayload struct {
+	Name string
+	Data string
+}
+
 func (app *Config) Broker(w http.ResponseWriter, r *http.Request) {
 	payload := Response{
 		Error:   false,
@@ -55,7 +61,7 @@ func (app *Config) HandleRequest(w http.ResponseWriter, r *http.Request) {
 		app.authenticate(w, requestPayload.Auth)
 
 	case "log":
-		app.logEventViaRabbit(w, requestPayload.Log)
+		app.logItemViaRPC(w, requestPayload.Log)
 
 	case "mail":
 		app.sendMail(w, requestPayload.Mail)
@@ -236,4 +242,31 @@ func (app *Config) pushToQueue(name, message string) error {
 	err = emitter.Push(string(j), "log.INFO")
 
 	return err
+}
+
+func (app *Config) logItemViaRPC(w http.ResponseWriter, l LogPayload) {
+	client, err := rpc.Dial("tcp", "logger-service:5001")
+	if err != nil {
+		app.errorJson(w, err)
+		return
+	}
+
+	payload := RPCPayload{
+		Name: l.Name,
+		Data: l.Data,
+	}
+
+	var result string
+	err = client.Call("RPCServer.LogInfo", payload, &result)
+	if err != nil {
+		app.errorJson(w, err)
+		return
+	}
+
+	resp := Response{
+		Error:   false,
+		Message: result,
+	}
+
+	app.writeJson(w, http.StatusOK, resp)
 }
