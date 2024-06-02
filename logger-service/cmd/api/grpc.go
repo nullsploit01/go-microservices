@@ -2,9 +2,13 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"log"
+	"net"
 
 	"github.com/nullsploit01/go-microservices/logger/data"
 	"github.com/nullsploit01/go-microservices/logger/logs"
+	"google.golang.org/grpc"
 )
 
 type LogServer struct {
@@ -34,4 +38,20 @@ func (l *LogServer) WriteLog(ctx context.Context, req *logs.LogRequest) (*logs.L
 	}
 
 	return res, nil
+}
+
+func (app *Config) gRPCListen() {
+	lis, err := net.Listen("tcp", fmt.Sprintf(":%s", gRpcPort))
+	if err != nil {
+		log.Fatalf("failed to listen for grpc %v", err)
+	}
+
+	server := grpc.NewServer()
+	logs.RegisterLogServiceServer(server, &LogServer{Models: app.Models})
+
+	log.Println("gRPC Server started on port", gRpcPort)
+
+	if err := server.Serve(lis); err != nil {
+		log.Fatalf("failed to start grpc server %v", err)
+	}
 }

@@ -59,6 +59,8 @@ func main() {
 	err = rpc.Register(new(RPCServer))
 	go app.rpcListen()
 
+	go app.gRPCListen()
+
 	err = srv.ListenAndServe()
 	if err != nil {
 		panic(err)
