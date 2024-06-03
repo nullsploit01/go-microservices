@@ -1,6 +1,11 @@
 version: '3'
 
 services:
+  front-end:
+    image: nullsploit/front-end:1.0.0
+    deploy:
+      mode: global
+
   broker-service:
     image: nullsploit/broker-service:1.0.1
     deploy:
