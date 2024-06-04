@@ -1,10 +1,23 @@
 version: '3'
 
 services:
+  webserver:
+    image: nullsploit/webserver:1.0.0
+    deploy:
+      mode: replicated
+      replicas: 1
+    ports:
+      - '80:80'
+      - '443:443'
+    volumes:
+      - webserver_data:/data
+      - webserver_config:/config
+
   front-end:
     image: nullsploit/front-end:1.0.0
     deploy:
-      mode: global
+      mode: replicated
+      replicas: 1
 
   broker-service:
     image: nullsploit/broker-service:1.0.1
@@ -86,3 +99,7 @@ services:
 
 volumes:
   db-data:
+    external: true
+  webserver_data:
+    external: true
+  webserver_config:
