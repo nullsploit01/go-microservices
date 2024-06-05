@@ -2,7 +2,7 @@ version: '3'
 
 services:
   webserver:
-    image: nullsploit/webserver-production:1.0.0
+    image: nullsploit/webserver-production:1.0.1
     deploy:
       mode: replicated
       replicas: 1
@@ -22,7 +22,7 @@ services:
       mode: replicated
       replicas: 1
     environment:
-      BROKER_URL: 'http://broker.nullsploit.in'
+      BROKER_URL: 'https://broker.nullsploit.in'
 
   broker-service:
     image: nullsploit/broker-service:1.0.1
