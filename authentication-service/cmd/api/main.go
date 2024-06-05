@@ -65,7 +65,7 @@ func connectDB() *sql.DB {
 	for {
 		conn, err := openDB(dsn)
 		if err != nil {
-			log.Panicln("Connecting to DB failed")
+			log.Println("Connecting to DB failed", err)
 			dbConnectCounts += 1
 		} else {
 			log.Println("Connected to DB")

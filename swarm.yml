@@ -34,7 +34,7 @@ services:
       replicas: 1
 
   authentication-service:
-    image: nullsploit/authentication-service:1.0.0
+    image: nullsploit/authentication-service:1.0.1
     deploy:
       mode: replicated
       replicas: 1
