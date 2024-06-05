@@ -37,10 +37,10 @@ spec:
     app: mailhog
   ports:
     - protocol: TCP
-      name: main-port
+      name: smtp-port
       port: 1025
       targetPort: 1025
     - protocol: TCP
-      name: main-port
+      name: ui-port
       port: 8025
       targetPort: 8025
